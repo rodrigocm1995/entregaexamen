@@ -1,0 +1,97 @@
+﻿@model IEnumerable<Examen.Models.PartNumbers>
+
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<script>
+    function exportToExcel() {
+         var list = @Html.Raw(Json.Encode(Model));
+        
+        $.ajax({
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            type: 'POST',
+            url: '/Report/Export',
+            data: JSON.stringify(list),
+            success: function (response) {
+                var arr = response.File;
+                var byteArray = new Uint8Array(arr);
+                var a = window.document.createElement('a');
+
+                a.href = window.URL.createObjectURL(new Blob([byteArray], { type: 'application/octet-stream' }));
+                a.download = response.FileName;
+
+                // Append anchor to body.
+                document.body.appendChild(a)
+                a.click();
+
+
+                // Remove anchor from body
+                document.body.removeChild(a)
+            },
+            failure: function (response) {
+                console.log(response);
+            }
+        });
+    }
+</script>
+
+<h2>Report</h2>
+
+@using (Html.BeginForm())
+{
+    <div class="form-inline">
+        <div class="form-group">
+            <label class="control-label">FKCustomer</label>
+            @Html.DropDownList("FKCustomer", null, htmlAttributes: new { @class = "form-control mx-sm-5" })
+        </div>
+        <div class="form-group">
+            <label class="control-label">PartNumber</label>
+            @Html.TextBox("PartNumber", null, htmlAttributes: new { @class = "form-control mx-sm-5" })
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Buscar" class="btn btn-default" />
+        </div>
+        <div class="form-group">
+            <button class="btn btn-info" onclick="exportToExcel(); return false;">Exportar</button>
+
+        </div>
+    </div>
+}
+<br>
+<table class="table" id="tableData">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.PartNumber)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Customers.Customer)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Customers.Buildings.Building)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Available)
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.PartNumber)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Customers.Customer)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Customers.Buildings.Building)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.Available)
+    </td>
+</tr>
+    }
+</table>
